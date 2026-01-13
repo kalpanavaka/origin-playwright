@@ -1,11 +1,14 @@
+# set up
+git clone https://github.com/kalpanavaka/origin-playwright.git
+cd origin-playwright
+# Dependencies: 
+npm install
+npx playwright install chromium
+
 # Run Locally
-npm ci
+
 npx playwright test --headed
 npx playwright show-report
-
-# Run in Docker
-docker build -t origin-playwright-tests .
-docker run --rm -v $(pwd)/test-results:/app/test-results origin-playwright-tests
 
 # Test Artifacts
 
