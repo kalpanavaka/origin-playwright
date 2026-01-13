@@ -1,11 +1,7 @@
  import * as fs from 'fs';
-// We use 'require' here to bypass the TypeScript default import issue
-const pdfParse = require('pdf-parse');
+// Use require but handle the potential nesting
+const pdf = require('pdf-parse');
 
-/**
- * Reads a PDF file and extracts text.
- * Fixed the "pdfParse is not a function" error.
- */
 export async function extractPdfText(pdfPath: string): Promise<string> {
     if (!fs.existsSync(pdfPath)) {
         throw new Error(`PDF file not found at path: ${pdfPath}`);
@@ -14,10 +10,18 @@ export async function extractPdfText(pdfPath: string): Promise<string> {
     const buffer = fs.readFileSync(pdfPath);
     
     try {
-        // Calling the required module directly
-        const data = await pdfParse(buffer);
+        // Some versions of pdf-parse require calling .default or the variable itself
+        const parseFunction = typeof pdf === 'function' ? pdf : pdf.default;
+        
+        if (typeof parseFunction !== 'function') {
+            // Fallback: If it's still not a function, try calling it directly as a last resort
+            const data = await pdf(buffer);
+            return data.text;
+        }
+
+        const data = await parseFunction(buffer);
         return data.text;
-    } catch (error) {
+    } catch (error: any) {
         throw new Error(`Failed to parse PDF: ${error.message}`);
     }
 }
